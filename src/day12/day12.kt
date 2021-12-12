@@ -30,27 +30,24 @@ fun countPaths(elements: List<String>) {
 
 
     val findPaths = findPaths(graph.find("start"), Node("end"), graph, mutableSetOf())
-    val findPathsPart2 = findPathsPart2(graph.find("start"), Node("end"), graph, mutableMapOf(), 2)
+    val findPathsPart2 = findPathsPart2(graph.find("start"), Node("end"), graph, mutableMapOf())
     println("${findPaths}")
     println("========")
     println("${findPathsPart2}")
 }
 
-fun findPaths(currentNode: Node?, endNode: Node, graph: MutableSet<Node>, paths: MutableSet<String>, maxVisitLowerCase: Int = 1): Int {
-    if (currentNode == null) {
-        return 0
-    }
-    if (endNode.name == currentNode.name) {
+fun findPaths(currentNode: Node?, endNode: Node, graph: MutableSet<Node>, paths: MutableSet<String>): Int {
+    if (endNode.name == currentNode?.name) {
         return 1
     }
     var path = 0
-    for (node in currentNode.linkedNodes) {
-        val numberOfVisits = paths.count { it == node && it != "end" }
+    for (node in currentNode?.linkedNodes ?: mutableSetOf()) {
+        val numberOfVisits = if (paths.contains(node)) 1 else 0
         paths.add(node)
         if (node.isUpperCase()) {
             path += findPaths(graph.find(node), endNode, graph, paths)
         }
-        if (node.isLowerCase() && numberOfVisits < maxVisitLowerCase) {
+        if (node == endNode.name || (node.isLowerCase() && numberOfVisits < 1)) {
             path += findPaths(graph.find(node), endNode, graph, paths)
             paths.remove(node)
         }
@@ -59,23 +56,19 @@ fun findPaths(currentNode: Node?, endNode: Node, graph: MutableSet<Node>, paths:
 }
 
 
-fun findPathsPart2(currentNode: Node?, endNode: Node, graph: MutableSet<Node>, paths: MutableMap<String, Int>, maxVisitLowerCase: Int = 1): Int {
-    if (currentNode == null) {
-        return 0
-    }
-    if (endNode.name == currentNode.name) {
+fun findPathsPart2(currentNode: Node?, endNode: Node, graph: MutableSet<Node>, paths: MutableMap<String, Int>, maxVisitLowerCase: Int = 2): Int {
+    if (endNode.name == currentNode?.name) {
         return 1
     }
     var path = 0
-    for (node in currentNode.linkedNodes) {
+    for (node in currentNode?.linkedNodes ?: mutableSetOf()) {
         val numberOfVisits = if (node == "end") 0 else  paths[node] ?: 0
-        val max = if (paths.filter { it.key != "start" && it.key != endNode.name && it.key.isLowerCase() }.map { it.value }.max() == maxVisitLowerCase) maxVisitLowerCase -1 else maxVisitLowerCase
         if (node.isUpperCase()) {
-            path += (findPathsPart2(graph.find(node), endNode, graph, paths, max))
+            path += findPathsPart2(graph.find(node), endNode, graph, paths, maxVisitLowerCase)
         }
-        if (node == endNode.name || (node.isLowerCase() && numberOfVisits < max)) {
+        if (node == endNode.name || (node.isLowerCase() && numberOfVisits < maxVisitLowerCase)) {
             paths[node] = numberOfVisits + 1
-            path += (findPathsPart2(graph.find(node), endNode, graph, paths, max))
+            path += findPathsPart2(graph.find(node), endNode, graph, paths, if (paths[node]!! > 1 && paths[node] == maxVisitLowerCase) 1 else maxVisitLowerCase)
             paths[node] = (paths[node] ?: 0) -1
         }
     }
