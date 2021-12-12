@@ -7,3 +7,4 @@ fun readFileAsLinesUsingReadLines(fileName: String): List<String>
 
 fun String.split() = this.split(" ")
 fun String.splitAndRemoveEmpty(delimeter: String) = this.split(delimeter).filter { it.isNotEmpty() }
+fun String.sort() = String(this.toCharArray().apply { sort() })
